@@ -112,6 +112,15 @@ RadioDADAA-Player/
 
 ## 📝 6. Version History & Changelog
 
+### Version 1.1.0 — Show Tile Graphics & Title Sanitization (September 2026)
+* **Release Date**: 2026-09-05
+* **Key Enhancements**:
+  * **CMS Show Tile Resolution**: Automatically detects Myriad Cloud CMS image references (`cms-blob_image/...`) in schedule item bodies and resolves them to high-resolution server URLs (`https://api.broadcast.radio/api/image/{guid}.{ext}`).
+  * **Visual Show Tiles in Schedule**: Added prominent, responsive show banner cards (`.schedule-show-tile`) in each schedule slot that has an associated graphic tile.
+  * **Filename Title Sanitization**: Detects when schedule items were given image filenames (e.g. `Screenshot 2026-02-13...`, `RKS HOUR OF POWER Banner.jpg`) and sanitizes them into clean, human-readable titles while displaying the actual graphic tile as the visual headline.
+  * **Dynamic Hero Artwork Fallback**: If a live broadcast track doesn't include individual song cover art, the hero player seamlessly displays the current show's graphic tile.
+  * Bumped service worker cache to `radiodadaa-v1.1.0` for cache invalidation.
+
 ### Version 1.0.0 — Initial Release (September 2026)
 * **Initial Release Date**: 2026-09-05
 * **Features Included**:

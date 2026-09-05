@@ -1,4 +1,4 @@
-const CACHE_NAME = 'radiodadaa-v1';
+const CACHE_NAME = 'radiodadaa-v1.1.0';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

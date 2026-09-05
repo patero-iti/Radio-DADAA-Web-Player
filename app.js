@@ -4,7 +4,7 @@
  */
 
 const CONFIG = {
-  version: '1.0.0',
+  version: '1.1.0',
   stationId: 8222,
   streamUrl: 'https://uksoutha.streaming.broadcast.radio/radio-dadaa',
   apiNowPlaying: 'https://player.broadcast.radio/api/nowplaying/8222/?scheduleLength=7',
@@ -262,6 +262,51 @@ class RadioPlayer {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // Helper to parse show metadata and extract show tile images
+  parseShowInfo(content) {
+    if (!content) {
+      return { title: 'Radio DADAA Broadcast', excerpt: '', imageUrl: null, isImageTile: false };
+    }
+
+    let rawTitle = (content.display_title || '').trim();
+    let body = (content.body || '').trim();
+    let excerpt = (content.excerpt || '').trim();
+    let imageUrl = null;
+
+    // Check if body or title has cms-blob_image reference
+    const blobMatch = (body + ' ' + rawTitle).match(/cms-blob_image\/([a-zA-Z0-9]+):([a-f0-9\-]+)/i);
+    if (blobMatch) {
+      const ext = blobMatch[1] || 'png';
+      const guid = blobMatch[2];
+      imageUrl = `https://api.broadcast.radio/api/image/${guid}.${ext}?g=center&w=600&h=340&c=true`;
+    }
+
+    // Check if the title is a raw image filename (e.g. Screenshot..., .png, .jpg)
+    let cleanTitle = rawTitle;
+    const isImageFilename = /\.(png|jpg|jpeg|webp|gif)$/i.test(rawTitle);
+
+    if (isImageFilename) {
+      if (/^screenshot/i.test(rawTitle)) {
+        // Screenshot show tile
+        cleanTitle = excerpt ? excerpt : 'Radio DADAA Feature Show';
+      } else {
+        // Humanize filename by stripping extension and generic suffixes
+        cleanTitle = rawTitle
+          .replace(/\.(png|jpg|jpeg|webp|gif)$/i, '')
+          .replace(/\s+(banner|tile|logo|header|cover)$/i, '')
+          .replace(/[_-]/g, ' ')
+          .trim();
+      }
+    }
+
+    return {
+      title: cleanTitle || 'Radio DADAA Broadcast',
+      excerpt: excerpt,
+      imageUrl: imageUrl,
+      isImageTile: !!imageUrl
+    };
+  }
+
   async fetchNowPlaying() {
     try {
       const res = await fetch(CONFIG.apiNowPlaying);
@@ -302,19 +347,25 @@ class RadioPlayer {
 
     this.trackTitle.textContent = title;
     this.trackArtist.textContent = artist;
-    this.artworkImg.src = artwork;
-    this.artworkImg.alt = `${title} by ${artist}`;
 
     // Find current show in schedule
     const now = Date.now();
-    const currentShow = this.scheduleData.find((s) => s.current || (s.start_time_in_station_tz <= now && s.end_time_in_station_tz >= now));
+    const currentShowItem = this.scheduleData.find((s) => s.current || (s.start_time_in_station_tz <= now && s.end_time_in_station_tz >= now));
     
-    if (currentShow && currentShow.content && currentShow.content[0]) {
-      const showInfo = currentShow.content[0];
-      this.currentShowTitle.textContent = showInfo.display_title || 'Radio DADAA Broadcast';
+    if (currentShowItem && currentShowItem.content && currentShowItem.content[0]) {
+      const showInfo = this.parseShowInfo(currentShowItem.content[0]);
+      this.currentShowTitle.textContent = showInfo.title;
+      
+      // If no track artwork is present but show has a tile image, use the show tile as hero artwork
+      if ((!this.nowPlayingData.artworkUrl || this.nowPlayingData.artworkUrl.length === 0) && showInfo.imageUrl) {
+        artwork = showInfo.imageUrl;
+      }
     } else {
       this.currentShowTitle.textContent = 'Radio DADAA Broadcast';
     }
+
+    this.artworkImg.src = artwork;
+    this.artworkImg.alt = `${title} by ${artist}`;
 
     this.updateMediaSessionMetadata(title, artist, artwork);
   }
@@ -342,9 +393,8 @@ class RadioPlayer {
     }
 
     this.scheduleList.innerHTML = showsForDay.map((item) => {
-      const content = item.content && item.content[0] ? item.content[0] : {};
-      const title = content.display_title || 'Live Show';
-      const excerpt = content.excerpt || 'Enjoy authentic audio and music on Radio DADAA.';
+      const content = item.content && item.content[0] ? item.content[0] : null;
+      const showInfo = this.parseShowInfo(content);
       
       const startTime = new Date(item.start_time_in_station_tz || item.start_tza);
       const endTime = new Date(item.end_time_in_station_tz || item.end_tza);
@@ -352,14 +402,23 @@ class RadioPlayer {
       const isCurrent = item.current;
 
       return `
-        <div class="schedule-card ${isCurrent ? 'current-show' : ''}">
+        <article class="schedule-card ${isCurrent ? 'current-show' : ''}">
           <div class="schedule-card-header">
-            <span>${timeStr}</span>
+            <span class="schedule-time">${timeStr}</span>
             ${isCurrent ? '<span class="onair-badge"><span class="onair-dot"></span> ON AIR</span>' : ''}
           </div>
-          <div class="show-title-text">${this.escapeHtml(title)}</div>
-          <div class="show-excerpt-text">${this.escapeHtml(excerpt)}</div>
-        </div>
+
+          ${showInfo.imageUrl ? `
+            <div class="schedule-show-tile">
+              <img class="schedule-show-tile-img" src="${showInfo.imageUrl}" alt="${this.escapeHtml(showInfo.title)}" loading="lazy" onerror="this.parentElement.style.display='none'" />
+            </div>
+          ` : ''}
+
+          <div class="schedule-body">
+            <h3 class="show-title-text">${this.escapeHtml(showInfo.title)}</h3>
+            ${showInfo.excerpt && showInfo.excerpt !== showInfo.title ? `<p class="show-excerpt-text">${this.escapeHtml(showInfo.excerpt)}</p>` : ''}
+          </div>
+        </article>
       `;
     }).join('');
   }
