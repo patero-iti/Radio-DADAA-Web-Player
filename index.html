@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>Radio DADAA - Listen Differently</title>
+  
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="Radio DADAA - Web Player">
+  <meta name="description" content="Art and alternative stories from a disability perspective. Stream Radio DADAA live.">
+  <meta name="theme-color" content="#e83bb2">
+  
+  <!-- iOS PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Radio DADAA">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  
+  <!-- Favicon & Manifest -->
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Web Fonts for Brand Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- PWA Install Banner -->
+  <div id="installBanner" class="install-banner" role="alert">
+    <div class="install-text">
+      <strong>Install Radio DADAA App</strong><br>
+      Add to your home screen for one-tap listening.
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button id="btnInstall" class="btn-install">Install</button>
+      <button id="btnCloseBanner" class="btn-close-banner" aria-label="Dismiss">&times;</button>
+    </div>
+  </div>
+
+  <div class="app-container">
+    
+    <!-- Top App Bar -->
+    <header class="app-header">
+      <div class="header-brand">
+        <img src="RadioDADAA-Logo-Primary-DarkPink.png" alt="Radio DADAA" class="header-logo">
+        <div class="onair-badge">
+          <span class="onair-dot"></span>
+          <span>ON AIR</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btnRefresh" class="btn-icon" aria-label="Refresh metadata" title="Refresh">
+          <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        </button>
+        <button id="btnShare" class="btn-icon" aria-label="Share Radio DADAA" title="Share">
+          <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Strike-through Motto Ribbon -->
+    <div class="motto-ribbon">
+      <span class="strike-word">MAINSTREAM</span>
+      <span class="motto-sep">✕</span>
+      <span class="strike-word">CONVENTIONAL</span>
+      <span class="motto-sep">✕</span>
+      <span class="strike-word">NORMAL</span>
+    </div>
+
+    <!-- TAB 1: NOW PLAYING / PLAYER VIEW -->
+    <main id="tab-player" class="tab-content active" role="region" aria-label="Live Audio Player">
+      <section class="player-hero">
+        
+        <!-- Artwork Card -->
+        <div class="artwork-wrapper">
+          <div class="artwork-glow"></div>
+          <div id="artworkContainer" class="artwork-container">
+            <img id="artworkImg" class="artwork-img" src="RadioDADAA-Logo-Primary-DarkPink.png" alt="Radio DADAA">
+          </div>
+          <!-- Visualizer Waves -->
+          <div class="visualizer-overlay" aria-hidden="true">
+            <span class="vis-bar"></span>
+            <span class="vis-bar"></span>
+            <span class="vis-bar"></span>
+            <span class="vis-bar"></span>
+            <span class="vis-bar"></span>
+          </div>
+        </div>
+
+        <!-- Track & Show Metadata -->
+        <div class="meta-container">
+          <h1 id="trackTitle" class="track-title">Radio DADAA Live</h1>
+          <div id="trackArtist" class="track-artist">Listen Differently</div>
+          <div class="show-pill">
+            <svg class="show-pill-icon" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+            <span id="currentShowTitle">Radio DADAA Broadcast</span>
+          </div>
+        </div>
+
+        <!-- Player Controls -->
+        <div class="controls-container">
+          <div class="main-controls">
+            <button id="btnPlay" class="btn-play-hero" aria-label="Play Radio DADAA Stream">
+              <svg id="playIcon" class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="pauseIcon" style="display: none;" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              <div id="spinner" class="spinner"></div>
+            </button>
+          </div>
+          <div id="streamStatus" class="stream-status-text">READY TO PLAY</div>
+
+          <!-- Volume Controls -->
+          <div class="volume-card">
+            <button id="btnMute" class="btn-icon" aria-label="Mute / Unmute" style="width: 32px; height: 32px; border: none; background: transparent;">
+              <svg id="volIcon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+              <svg id="muteIcon" style="display: none;" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+            </button>
+            <input id="volumeSlider" type="range" class="volume-slider" min="0" max="1" step="0.05" value="0.9" aria-label="Volume">
+          </div>
+        </div>
+
+        <!-- Station Tagline Sign-off Banner -->
+        <div class="station-tagline-card">
+          <img src="R_RadioDADAA-Tagline-LightPink-DarkPinkBG.jpg" alt="Radio DADAA - Art and alternative stories from a disability perspective" class="tagline-img">
+        </div>
+
+      </section>
+    </main>
+
+    <!-- TAB 2: SCHEDULE VIEW -->
+    <section id="tab-schedule" class="tab-content" role="region" aria-label="Station Schedule">
+      <div class="section-heading">
+        <span>Broadcast Schedule</span>
+        <span style="font-size: 12px; color: var(--color-primary-light); font-weight: normal;">AWST (Perth Time)</span>
+      </div>
+      <div id="daySelector" class="day-selector-container"></div>
+      <div id="scheduleList" class="schedule-list">
+        <div class="schedule-card">
+          <div class="show-title-text">Loading show guide...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: RECENTLY PLAYED VIEW -->
+    <section id="tab-history" class="tab-content" role="region" aria-label="Recently Played Tracks">
+      <div class="section-heading">
+        <span>Recently Played</span>
+        <span style="font-size: 12px; color: var(--color-text-dim); font-weight: normal;">Last 5 Tracks</span>
+      </div>
+      <div id="historyList" class="history-list">
+        <div class="history-card">
+          <div class="history-meta">
+            <div class="history-title">Loading track history...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: ABOUT & COMMUNITY VIEW -->
+    <section id="tab-about" class="tab-content" role="region" aria-label="About Radio DADAA">
+      <div class="about-card">
+        <h3>About Radio DADAA</h3>
+        <p>Radio DADAA is an online radio station that covers artistic and alternative stories from a disability perspective. From genre-skipping local music and powerful audio dramas, to storytelling with depth and conversations that truly matter, Radio DADAA is a creative platform for authentic voices.</p>
+        
+        <h3>Got Something to Say?</h3>
+        <p>We are always on the lookout for bold voices, big ideas, and local legends to join our community of content creators and presenters:</p>
+        
+        <ul class="bullet-list">
+          <li>Host your own show</li>
+          <li>Create content that connects</li>
+          <li>Share stories from your community</li>
+          <li>Explore experimental audio</li>
+          <li>Full training, support, and studio time provided</li>
+        </ul>
+
+        <a href="mailto:radioinfo@dadaa.org.au" class="btn-primary-action">
+          <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          Contact radioinfo@dadaa.org.au
+        </a>
+      </div>
+
+      <div class="about-card" style="text-align: center;">
+        <p style="font-size: 13px; color: var(--color-text-dim);">Visit the official DADAA website to learn more about our arts programs and events.</p>
+        <a href="https://www.dadaa.org.au/radiodadaa-landing/" target="_blank" rel="noopener noreferrer" class="btn-primary-action" style="background: transparent; border: 1px solid var(--color-primary); color: var(--color-primary-light);">
+          Visit dadaa.org.au ↗
+        </a>
+      </div>
+      <div style="margin-top: 14px; font-size: 11px; color: var(--color-text-dim); text-align: center;">Radio DADAA Web Player • Version 1.0.0</div>
+    </section>
+
+    <!-- TAB 5: MYRIAD EMBED VIEW -->
+    <section id="tab-embed" class="tab-content" role="region" aria-label="Official Broadcast Radio Embed">
+      <div class="section-heading">
+        <span>Myriad Cloud Player</span>
+      </div>
+      <div class="embed-container">
+        <iframe src="https://player.broadcast.radio/radio-dadaa?mode=embed" class="embed-iframe" title="Broadcast Radio DADAA" allow="autoplay"></iframe>
+      </div>
+    </section>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="app-nav" aria-label="Main Navigation">
+      <button class="nav-item active" data-tab="player" aria-label="Listen Live">
+        <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        <span>Listen</span>
+      </button>
+
+      <button class="nav-item" data-tab="schedule" aria-label="Show Schedule">
+        <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+        <span>Schedule</span>
+      </button>
+
+      <button class="nav-item" data-tab="history" aria-label="Recently Played Tracks">
+        <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+        <span>History</span>
+      </button>
+
+      <button class="nav-item" data-tab="about" aria-label="About Radio DADAA">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        <span>About</span>
+      </button>
+
+      <button class="nav-item" data-tab="embed" aria-label="Myriad Cloud Embed">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12z"/></svg>
+        <span>Embed</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- Player Script -->
+  <script src="app.js"></script>
+</body>
+</html>

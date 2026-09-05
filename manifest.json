@@ -1,0 +1,31 @@
+{
+  "name": "Radio DADAA",
+  "short_name": "Radio DADAA",
+  "description": "Art and alternative stories from a disability perspective. Listen Differently.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#231218",
+  "theme_color": "#e83bb2",
+  "lang": "en-AU",
+  "categories": ["music", "entertainment", "news"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
