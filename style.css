@@ -867,3 +867,32 @@ html, body {
   font-size: 18px;
   cursor: pointer;
 }
+
+/* Presenter Tag & Title Row in Schedule */
+.show-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.presenter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(232, 59, 178, 0.15);
+  border: 1px solid rgba(232, 59, 178, 0.4);
+  color: var(--color-primary-light);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.presenter-tag svg {
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
+}

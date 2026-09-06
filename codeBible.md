@@ -112,6 +112,15 @@ RadioDADAA-Player/
 
 ## 📝 6. Version History & Changelog
 
+### Version 1.2.0 — Comprehensive Show & Presenter Metadata + Streamlined Navigation (September 2026)
+* **Release Date**: 2026-09-06
+* **Key Enhancements**:
+  * **Multi-Object Schedule Content Parsing**: Myriad Cloud API provides an array of content objects per slot (`show` for title & description, `presenter` for host name, and `featuredImage` for graphic tiles). The parser now inspects all objects in the slot to present the complete show title, presenter badge (e.g. *Raf G*, *Connla K*, *Eduardo C*), rich show description, and show tile image simultaneously.
+  * **Streamlined 4-Tab Navigation**: Removed the redundant Myriad iframe embed tab. The app navigation is now focused strictly on **Listen**, **Schedule**, **History**, and **About**, preventing dual-player confusion and improving mobile layout balance.
+  * **Presenter Badges**: Added visual presenter tags with microphone icons in schedule cards.
+  * **Now Playing Presenter Sync**: When a scheduled show has an assigned presenter, the Now Playing screen updates to display the show title and presenter credit (*e.g., "Blank Canvas • with Raf G"*).
+  * Bumped service worker cache to `radiodadaa-v1.2.0`.
+
 ### Version 1.1.0 — Show Tile Graphics & Title Sanitization (September 2026)
 * **Release Date**: 2026-09-05
 * **Key Enhancements**:

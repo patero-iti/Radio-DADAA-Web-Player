@@ -4,7 +4,7 @@
  */
 
 const CONFIG = {
-  version: '1.1.0',
+  version: '1.2.0',
   stationId: 8222,
   streamUrl: 'https://uksoutha.streaming.broadcast.radio/radio-dadaa',
   apiNowPlaying: 'https://player.broadcast.radio/api/nowplaying/8222/?scheduleLength=7',
@@ -262,36 +262,46 @@ class RadioPlayer {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Helper to parse show metadata and extract show tile images
-  parseShowInfo(content) {
-    if (!content) {
-      return { title: 'Radio DADAA Broadcast', excerpt: '', imageUrl: null, isImageTile: false };
+  /**
+   * Parse schedule item content array to extract Show Info, Presenter, and Show Tile Graphic.
+   * Myriad Cloud schedule items contain an array of objects:
+   *  - Show object (contentTypeId: 8) -> display_title, excerpt
+   *  - FeaturedImage object (contentTypeId: 7) -> cms-blob_image
+   *  - Presenter object (contentTypeId: 9) -> presenter display_title
+   */
+  parseShowInfo(contentList) {
+    if (!contentList || !Array.isArray(contentList) || contentList.length === 0) {
+      return {
+        title: 'Radio DADAA Continuous Broadcast',
+        excerpt: 'Alternative stories, genres and music curated from a disability perspective.',
+        presenter: null,
+        imageUrl: null
+      };
     }
 
-    let rawTitle = (content.display_title || '').trim();
-    let body = (content.body || '').trim();
-    let excerpt = (content.excerpt || '').trim();
-    let imageUrl = null;
+    // 1. Find Show object
+    const showObj = contentList.find(c => c.contentTypeId === 8 || (c.contentType && c.contentType.slug === 'show'))
+      || contentList.find(c => c.contentTypeId !== 7 && c.contentTypeId !== 9)
+      || contentList[0];
 
-    // Check if body or title has cms-blob_image reference
-    const blobMatch = (body + ' ' + rawTitle).match(/cms-blob_image\/([a-zA-Z0-9]+):([a-f0-9\-]+)/i);
-    if (blobMatch) {
-      const ext = blobMatch[1] || 'png';
-      const guid = blobMatch[2];
-      imageUrl = `https://api.broadcast.radio/api/image/${guid}.${ext}?g=center&w=600&h=340&c=true`;
-    }
+    // 2. Find Featured Image object or blob in any object
+    const imgObj = contentList.find(c => c.contentTypeId === 7 || (c.contentType && c.contentType.slug === 'featuredImage'))
+      || contentList.find(c => (c.body && c.body.includes('cms-blob_image')) || (c.display_title && c.display_title.includes('cms-blob_image')));
 
-    // Check if the title is a raw image filename (e.g. Screenshot..., .png, .jpg)
-    let cleanTitle = rawTitle;
-    const isImageFilename = /\.(png|jpg|jpeg|webp|gif)$/i.test(rawTitle);
+    // 3. Find Presenter object
+    const presenterObj = contentList.find(c => c.contentTypeId === 9 || (c.contentType && c.contentType.slug === 'presenter'));
 
-    if (isImageFilename) {
-      if (/^screenshot/i.test(rawTitle)) {
-        // Screenshot show tile
-        cleanTitle = excerpt ? excerpt : 'Radio DADAA Feature Show';
+    // Extract Show Title & Excerpt
+    let title = (showObj && showObj.display_title ? showObj.display_title : '').trim();
+    let excerpt = (showObj && showObj.excerpt ? showObj.excerpt : '').trim();
+    let presenter = (presenterObj && presenterObj.display_title ? presenterObj.display_title : '').trim();
+
+    // If title is an image filename (e.g. from a raw upload), sanitize it
+    if (/\.(png|jpg|jpeg|webp|gif)$/i.test(title)) {
+      if (/^screenshot/i.test(title)) {
+        title = excerpt ? excerpt.split('.')[0] : 'Radio DADAA Feature Show';
       } else {
-        // Humanize filename by stripping extension and generic suffixes
-        cleanTitle = rawTitle
+        title = title
           .replace(/\.(png|jpg|jpeg|webp|gif)$/i, '')
           .replace(/\s+(banner|tile|logo|header|cover)$/i, '')
           .replace(/[_-]/g, ' ')
@@ -299,11 +309,21 @@ class RadioPlayer {
       }
     }
 
+    // Extract Image URL if present
+    let imageUrl = null;
+    const bodyStr = ((imgObj && imgObj.body ? imgObj.body : '') + ' ' + (imgObj && imgObj.display_title ? imgObj.display_title : ''));
+    const blobMatch = bodyStr.match(/cms-blob_image\/([a-zA-Z0-9]+):([a-f0-9\-]+)/i);
+    if (blobMatch) {
+      const ext = blobMatch[1] || 'png';
+      const guid = blobMatch[2];
+      imageUrl = `https://api.broadcast.radio/api/image/${guid}.${ext}?g=center&w=600&h=340&c=true`;
+    }
+
     return {
-      title: cleanTitle || 'Radio DADAA Broadcast',
-      excerpt: excerpt,
-      imageUrl: imageUrl,
-      isImageTile: !!imageUrl
+      title: title || 'Radio DADAA Broadcast',
+      excerpt: (excerpt && excerpt !== 'None') ? excerpt : '',
+      presenter: presenter || null,
+      imageUrl: imageUrl
     };
   }
 
@@ -352,9 +372,13 @@ class RadioPlayer {
     const now = Date.now();
     const currentShowItem = this.scheduleData.find((s) => s.current || (s.start_time_in_station_tz <= now && s.end_time_in_station_tz >= now));
     
-    if (currentShowItem && currentShowItem.content && currentShowItem.content[0]) {
-      const showInfo = this.parseShowInfo(currentShowItem.content[0]);
-      this.currentShowTitle.textContent = showInfo.title;
+    if (currentShowItem && currentShowItem.content) {
+      const showInfo = this.parseShowInfo(currentShowItem.content);
+      let showLabel = showInfo.title;
+      if (showInfo.presenter) {
+        showLabel += ` • with ${showInfo.presenter}`;
+      }
+      this.currentShowTitle.textContent = showLabel;
       
       // If no track artwork is present but show has a tile image, use the show tile as hero artwork
       if ((!this.nowPlayingData.artworkUrl || this.nowPlayingData.artworkUrl.length === 0) && showInfo.imageUrl) {
@@ -393,8 +417,7 @@ class RadioPlayer {
     }
 
     this.scheduleList.innerHTML = showsForDay.map((item) => {
-      const content = item.content && item.content[0] ? item.content[0] : null;
-      const showInfo = this.parseShowInfo(content);
+      const showInfo = this.parseShowInfo(item.content);
       
       const startTime = new Date(item.start_time_in_station_tz || item.start_tza);
       const endTime = new Date(item.end_time_in_station_tz || item.end_tza);
@@ -415,8 +438,16 @@ class RadioPlayer {
           ` : ''}
 
           <div class="schedule-body">
-            <h3 class="show-title-text">${this.escapeHtml(showInfo.title)}</h3>
-            ${showInfo.excerpt && showInfo.excerpt !== showInfo.title ? `<p class="show-excerpt-text">${this.escapeHtml(showInfo.excerpt)}</p>` : ''}
+            <div class="show-title-row">
+              <h3 class="show-title-text">${this.escapeHtml(showInfo.title)}</h3>
+              ${showInfo.presenter ? `
+                <span class="presenter-tag">
+                  <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                  ${this.escapeHtml(showInfo.presenter)}
+                </span>
+              ` : ''}
+            </div>
+            ${showInfo.excerpt ? `<p class="show-excerpt-text">${this.escapeHtml(showInfo.excerpt)}</p>` : ''}
           </div>
         </article>
       `;
