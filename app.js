@@ -4,7 +4,7 @@
  */
 
 const CONFIG = {
-  version: '1.2.0',
+  version: '1.2.1',
   stationId: 8222,
   streamUrl: 'https://uksoutha.streaming.broadcast.radio/radio-dadaa',
   apiNowPlaying: 'https://player.broadcast.radio/api/nowplaying/8222/?scheduleLength=7',
@@ -99,13 +99,17 @@ class RadioPlayer {
     });
 
     this.audio.addEventListener('waiting', () => {
-      this.isLoading = true;
-      this.updatePlayStateUI();
+      if (this.isPlaying) {
+        this.isLoading = true;
+        this.updatePlayStateUI();
+      }
     });
 
     this.audio.addEventListener('error', (e) => {
-      console.warn('Audio stream error occurred, attempting reconnection...', e);
-      this.handleStreamError();
+      if (this.isPlaying && !this.audio.paused) {
+        console.warn('Audio stream error occurred, attempting reconnection...', e);
+        this.handleStreamError();
+      }
     });
   }
 
@@ -184,15 +188,26 @@ class RadioPlayer {
 
   togglePlay() {
     if (this.isPlaying) {
+      // Cleanly pause the stream
       this.audio.pause();
-      this.audio.src = ''; // Release network connection for live stream
+      this.isPlaying = false;
+      this.isLoading = false;
+      this.updatePlayStateUI();
+      this.updateMediaSessionState('paused');
     } else {
+      // Unpause / Resume playback
       this.isLoading = true;
       this.updatePlayStateUI();
-      // Add timestamp cache-buster for fresh live buffer
+
+      // Connect to the live stream
       this.audio.src = `${CONFIG.streamUrl}?nocache=${Date.now()}`;
       this.audio.load();
-      this.audio.play().catch((err) => {
+      this.audio.play().then(() => {
+        this.isLoading = false;
+        this.isPlaying = true;
+        this.updatePlayStateUI();
+        this.updateMediaSessionState('playing');
+      }).catch((err) => {
         console.error('Playback error:', err);
         this.isLoading = false;
         this.isPlaying = false;
@@ -202,11 +217,12 @@ class RadioPlayer {
   }
 
   handleStreamError() {
+    if (!this.isPlaying) return;
     this.isLoading = true;
     this.updatePlayStateUI();
     this.streamStatus.textContent = 'RECONNECTING...';
     setTimeout(() => {
-      if (this.isPlaying) {
+      if (this.isPlaying && this.audio.paused) {
         this.audio.src = `${CONFIG.streamUrl}?nocache=${Date.now()}`;
         this.audio.load();
         this.audio.play().catch(() => {});

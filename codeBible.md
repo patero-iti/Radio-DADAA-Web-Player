@@ -112,6 +112,14 @@ RadioDADAA-Player/
 
 ## 📝 6. Version History & Changelog
 
+### Version 1.2.1 — Clean Audio Stream Play/Pause Toggle Fix (September 2026)
+* **Release Date**: 2026-09-08
+* **Fix Details**:
+  * **Resolved Stream Reload on Pause**: Fixed an issue where pausing the audio element previously cleared `audio.src = ''`, triggering an internal `error` event that inadvertently caused `handleStreamError()` to immediately reload and reconnect the stream.
+  * **Graceful Play/Pause Lifecycle**: The play button now cleanly calls `audio.pause()` to stop audio playback and update the UI/MediaSession to paused. Pressing the button again immediately unpauses and reconnects to the live edge seamlessly.
+  * **Guarded Error Handler**: The audio `error` listener now guards against paused states, preventing false-positive reconnect cycles.
+  * Bumped service worker cache to `radiodadaa-v1.2.1`.
+
 ### Version 1.2.0 — Comprehensive Show & Presenter Metadata + Streamlined Navigation (September 2026)
 * **Release Date**: 2026-09-06
 * **Key Enhancements**:
